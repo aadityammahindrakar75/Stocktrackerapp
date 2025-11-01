@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | StockTrackerApp</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to StockTracker Dashboard</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="watchlist.html">My Watchlist</a>
+            <a href="LogoutServlet">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="search-section">
+            <h2>Search Stocks</h2>
+            <form action="StockServlet" method="get">
+                <input type="text" name="symbol" placeholder="Enter Stock Symbol (e.g. AAPL)" required>
+                <button type="submit">Search</button>
+            </form>
+        </section>
+
+        <section class="stock-section">
+            <h2>Stock Details</h2>
+            <div id="stock-info">
+                <!-- StockServlet will populate this -->
+            </div>
+        </section>
+
+        <section class="watchlist-section">
+            <h2>My Watchlist</h2>
+            <form action="WatchlistServlet" method="post">
+                <input type="text" name="symbol" placeholder="Add stock to watchlist" required>
+                <button type="submit">Add</button>
+            </form>
+            <div id="watchlist-items">
+                <!-- WatchlistServlet will load items here -->
+            </div>
+        </section>
+    </main>
+</body>
+</html>

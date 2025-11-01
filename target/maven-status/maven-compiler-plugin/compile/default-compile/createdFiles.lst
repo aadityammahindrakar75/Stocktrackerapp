@@ -1,0 +1,13 @@
+com\stocktracker\model\Watchlist.class
+com\stocktracker\servlet\LogoutServlet.class
+com\stocktracker\dao\WatchlistDAO.class
+com\stocktracker\servlet\LoginServlet.class
+com\stocktracker\servlet\WatchlistServlet.class
+com\stocktracker\util\DBConnection.class
+com\stocktracker\dao\UserDAO.class
+com\stocktracker\dao\WatchlistItem.class
+com\stocktracker\model\Stock.class
+com\stocktracker\model\User.class
+com\stocktracker\servlet\RegisterServlet.class
+com\stocktracker\servlet\StockServlet.class
+com\stocktracker\dao\StockDAO.class
