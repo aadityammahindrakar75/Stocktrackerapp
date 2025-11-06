@@ -1,4 +1,4 @@
-package com.stocktracker.dao;
+package com.stocktracker.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -47,6 +47,7 @@ public class WatchlistItem implements Serializable {
     public LocalDateTime getAddedAt() { return addedAt; }
     public void setAddedAt(LocalDateTime addedAt) { this.addedAt = addedAt; }
 
+    // Returns formatted timestamp string
     public String getAddedAtFormatted() {
         if (addedAt == null) return "";
         return addedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

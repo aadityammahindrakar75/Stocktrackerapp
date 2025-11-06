@@ -1,96 +1,83 @@
 package com.stocktracker.servlet;
 
-import java.io.IOException;
-import java.util.List;
-
-import com.stocktracker.dao.StockDAO;
 import com.stocktracker.model.Stock;
-import com.stocktracker.model.User;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import org.json.JSONObject;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import java.io.*;
+import java.net.*;
 
-@WebServlet("/stocks")
+@WebServlet("/StockServlet")
 public class StockServlet extends HttpServlet {
-
-    private StockDAO stockDAO;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        stockDAO = new StockDAO();
-    }
+    private static final String API_KEY = "Z1S7WHU6NLKRWSXZ"; // Your Alpha Vantage API Key
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.html");
-            return;
-        }
-
-        User user = (User) session.getAttribute("user");
-
-        // fetch all stocks for this user
-        List<Stock> stocks = java.util.Collections.emptyList();
-        req.setAttribute("stocks", stocks);
-        req.getRequestDispatcher("/dashboard.jsp").forward(req, resp);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.html");
-            return;
-        }
-
-        User user = (User) session.getAttribute("user");
-
-        String symbol = req.getParameter("symbol");
-        String quantityStr = req.getParameter("quantity");
-        String buyPriceStr = req.getParameter("buyPrice");
-
-        if (symbol == null || symbol.isEmpty() ||
-            quantityStr == null || buyPriceStr == null) {
-            req.setAttribute("error", "Please fill all fields.");
-            req.getRequestDispatcher("/dashboard.jsp").forward(req, resp);
+        String symbol = request.getParameter("symbol");
+        if (symbol == null || symbol.trim().isEmpty()) {
+            request.setAttribute("error", "Please enter a stock symbol.");
+            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
             return;
         }
 
         try {
-            int quantity = Integer.parseInt(quantityStr);
-            double buyPrice = Double.parseDouble(buyPriceStr);
+            // 1️⃣ Fetch Real-Time Stock Data
+            String apiUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
+                    + URLEncoder.encode(symbol.trim(), "UTF-8")
+                    + "&apikey=" + API_KEY;
 
-            // Provide default values for missing constructor arguments
-            Stock stock = new Stock(
-                user.getId(),
-                symbol.toUpperCase(),
-                String.valueOf(quantity),
-                buyPrice,
-                0.0, // default value for currentPrice
-                0.0  // default value for profitLoss
-            );
-            boolean added = stockDAO.addStock(stock);
+            URL url = new URL(apiUrl);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            StringBuilder jsonResponse = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null)
+                jsonResponse.append(line);
+            reader.close();
 
-            if (added) {
-                resp.sendRedirect(req.getContextPath() + "/stocks");
-            } else {
-                req.setAttribute("error", "Failed to add stock. Try again.");
-                req.getRequestDispatcher("/dashboard.jsp").forward(req, resp);
+            JSONObject json = new JSONObject(jsonResponse.toString());
+
+            // Check if "Global Quote" exists (API can return an empty response)
+            if (!json.has("Global Quote") || json.getJSONObject("Global Quote").isEmpty()) {
+                request.setAttribute("error", "No data found for symbol: " + symbol.toUpperCase());
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                return;
             }
 
-        } catch (NumberFormatException e) {
-            req.setAttribute("error", "Invalid quantity or price.");
-            req.getRequestDispatcher("/dashboard.jsp").forward(req, resp);
+            JSONObject quote = json.getJSONObject("Global Quote");
+
+            // 2️⃣ Extract Stock Data Safely
+            String companySymbol = quote.optString("01. symbol", symbol.toUpperCase());
+            double price = parseDoubleSafe(quote.optString("05. price"));
+            double change = parseDoubleSafe(quote.optString("09. change"));
+            double percentChange = parseDoubleSafe(
+                    quote.optString("10. change percent").replace("%", "")
+            );
+
+            // 3️⃣ Populate Stock Object
+            Stock stock = new Stock(0, companySymbol, "N/A", price, change, percentChange);
+
+            // 4️⃣ Set Attribute for JSP
+            request.setAttribute("stock", stock);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error fetching stock data. Please try again later.");
+        }
+
+        // Forward back to dashboard.jsp
+        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+    }
+
+    // Helper method to safely parse double values
+    private double parseDoubleSafe(String value) {
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (Exception e) {
+            return 0.0;
         }
     }
 }

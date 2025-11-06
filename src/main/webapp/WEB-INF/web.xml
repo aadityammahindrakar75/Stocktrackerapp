@@ -24,6 +24,8 @@
         <!-- session timeout in minutes -->
         <session-timeout>30</session-timeout>
     </session-config>
+    
+
 
     <!-- Error page (simple default) -->
     <error-page>

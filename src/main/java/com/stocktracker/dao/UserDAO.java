@@ -73,7 +73,7 @@ public class UserDAO {
              PreparedStatement ps = conn.prepareStatement(CHECK_EMAIL_SQL)) {
 
             ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
 
