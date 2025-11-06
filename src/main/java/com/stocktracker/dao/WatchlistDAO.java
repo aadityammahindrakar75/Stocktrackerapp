@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stocktracker.model.WatchlistItem;
 import com.stocktracker.util.DBConnection;
 
 /*
@@ -39,6 +40,24 @@ public class WatchlistDAO {
 
     private static final String EXISTS_SQL =
             "SELECT id FROM watchlist WHERE user_id = ? AND symbol = ?";
+
+
+    public List<String> getUserSymbols(int userId) {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT stock_symbol FROM watchlist WHERE user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getString("stock_symbol"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 
     public List<WatchlistItem> getUserWatchlist(int userId) {
         List<WatchlistItem> list = new ArrayList<>();

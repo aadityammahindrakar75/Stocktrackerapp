@@ -38,8 +38,11 @@ public class LoginServlet extends HttpServlet {
         String password = req.getParameter("password");
 
         if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
-            req.setAttribute("error", "Please enter email and password.");
-            req.getRequestDispatcher("/login.html").forward(req, resp);
+            // input validation failed: set error message and forward back to login page
+            resp.getWriter().println("<script type='text/javascript'>");
+            resp.getWriter().println("alert('Please enter both email and password.');");
+            resp.getWriter().println("window.location='login.html';");
+            resp.getWriter().println("</script>");
             return;
         }
 
@@ -47,12 +50,16 @@ public class LoginServlet extends HttpServlet {
         if (user != null) {
             HttpSession session = req.getSession(true);
             session.setAttribute("user", user);
-            // optional: set session timeout in seconds
-            // session.setMaxInactiveInterval(30*60);
-            resp.sendRedirect(req.getContextPath() + "/dashboard.jsp");
+
+            resp.getWriter().println("<script type='text/javascript'>");
+            resp.getWriter().println("alert('Login Successful!');");
+            resp.getWriter().println("window.location='dashboard.jsp';");
+            resp.getWriter().println("</script>");
         } else {
-            req.setAttribute("error", "Invalid email or password.");
-            req.getRequestDispatcher("/login.html").forward(req, resp);
+             resp.getWriter().println("<script type='text/javascript'>");
+            resp.getWriter().println("alert('Invalid email or password. Please try again.');");
+            resp.getWriter().println("window.location='login.html';");
+            resp.getWriter().println("</script>");
         }
     }
 }

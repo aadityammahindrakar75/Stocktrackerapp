@@ -34,15 +34,16 @@ public class StockDAO {
         }
     }
 
-    // Add a new stock
+    // ✅ Add a new stock (with quantity)
     public boolean addStock(Stock stock) {
-        String sql = "INSERT INTO stocks(symbol, name, price, change_value, percentage_change) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO stocks(symbol, name, price, change_value, percentage_change, quantity) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, stock.getSymbol());
             ps.setString(2, stock.getName());
             ps.setDouble(3, stock.getPrice());
             ps.setDouble(4, stock.getChange());
             ps.setDouble(5, stock.getPercentageChange());
+            ps.setInt(6, stock.getQuantity()); // ✅ new
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -51,7 +52,7 @@ public class StockDAO {
         }
     }
 
-    // Get all stocks
+    // ✅ Get all stocks (with quantity)
     public List<Stock> getAllStocks() {
         List<Stock> list = new ArrayList<>();
         String sql = "SELECT * FROM stocks";
@@ -63,7 +64,9 @@ public class StockDAO {
                         rs.getString("name"),
                         rs.getDouble("price"),
                         rs.getDouble("change_value"),
-                        rs.getDouble("percentage_change")
+                        rs.getDouble("percentage_change"),
+                        rs.getInt("quantity"), // ✅ new
+                        false // alreadyOwned default false here
                 );
                 list.add(s);
             }
@@ -73,7 +76,7 @@ public class StockDAO {
         return list;
     }
 
-    // Get stock by symbol
+    // ✅ Get a stock by its symbol
     public Stock getStockBySymbol(String symbol) {
         String sql = "SELECT * FROM stocks WHERE symbol=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -86,12 +89,27 @@ public class StockDAO {
                         rs.getString("name"),
                         rs.getDouble("price"),
                         rs.getDouble("change_value"),
-                        rs.getDouble("percentage_change")
+                        rs.getDouble("percentage_change"),
+                        rs.getInt("quantity"), // ✅ new
+                        false
                 );
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // ✅ Optional: update stock quantity (e.g., user buys more)
+    public boolean updateStockQuantity(String symbol, int newQuantity) {
+        String sql = "UPDATE stocks SET quantity=? WHERE symbol=?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, newQuantity);
+            ps.setString(2, symbol);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

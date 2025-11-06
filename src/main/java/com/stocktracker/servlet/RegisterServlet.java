@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet("/register")
+@WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
 
     private UserDAO userDAO;
@@ -26,7 +26,7 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.getRequestDispatcher("/registration.html").forward(req, resp);
+        req.getRequestDispatcher("/register.html").forward(req, resp);
     }
 
     @Override
@@ -42,13 +42,13 @@ public class RegisterServlet extends HttpServlet {
         if (username == null || email == null || password == null || confirm == null ||
             username.isEmpty() || email.isEmpty() || password.isEmpty()) {
             req.setAttribute("error", "Please fill all fields.");
-            req.getRequestDispatcher("/registration.html").forward(req, resp);
+            req.getRequestDispatcher("/register.html").forward(req, resp);
             return;
         }
 
         if (!password.equals(confirm)) {
             req.setAttribute("error", "Passwords do not match.");
-            req.getRequestDispatcher("/registration.html").forward(req, resp);
+            req.getRequestDispatcher("/register.html").forward(req, resp);
             return;
         }
 
@@ -62,7 +62,7 @@ public class RegisterServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/dashboard.jsp");
         } else {
             req.setAttribute("error", "Registration failed. Email may already exist.");
-            req.getRequestDispatcher("/registration.html").forward(req, resp);
+            req.getRequestDispatcher("/register.html").forward(req, resp);
         }
     }
 }
